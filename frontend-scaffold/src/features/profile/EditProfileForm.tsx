@@ -177,7 +177,7 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({
           Username
         </label>
         <div className="relative">
-          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-700 dark:text-gray-300">
             <Lock size={18} />
           </div>
           <input
@@ -186,7 +186,7 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({
             className="w-full px-4 py-3 pl-12 border-2 border-black bg-gray-100 text-black font-medium opacity-75 cursor-not-allowed focus:outline-none"
           />
         </div>
-        <p className="mt-1 text-xs text-gray-500">
+        <p className="mt-1 text-xs text-gray-800 dark:text-gray-200">
           Username cannot be changed after registration.
         </p>
       </div>

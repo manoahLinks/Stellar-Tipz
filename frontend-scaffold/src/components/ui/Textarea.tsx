@@ -37,11 +37,11 @@ const Textarea: React.FC<TextareaProps> = ({
   };
 
   const getCounterColor = () => {
-    if (!maxLength) return 'text-gray-500';
+    if (!maxLength) return 'text-gray-800 dark:text-gray-200';
     if (charCount >= maxLength) return 'text-red-600';
     if (dangerAt !== undefined && charCount >= dangerAt) return 'text-red-600';
     if (warnAt !== undefined && charCount >= warnAt) return 'text-yellow-500';
-    return 'text-gray-500';
+    return 'text-gray-800 dark:text-gray-200';
   };
 
   return (
@@ -60,7 +60,7 @@ const Textarea: React.FC<TextareaProps> = ({
         maxLength={maxLength}
         className={`w-full px-4 py-3 border-2 border-black bg-white text-black font-medium
           focus:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 focus:shadow-brutalist
-          placeholder:text-gray-400 resize-y ${error ? 'border-red-600' : ''} ${className}`}
+          placeholder:text-gray-700 dark:text-gray-300 resize-y ${error ? 'border-red-600' : ''} ${className}`}
         onChange={handleChange}
         value={value}
         defaultValue={defaultValue}

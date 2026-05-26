@@ -40,7 +40,7 @@ const ToastItem = React.forwardRef<HTMLDivElement, { toast: Toast }>(({ toast },
       </div>
       <button
         onClick={() => removeToast(toast.id)}
-        className="shrink-0 text-gray-400 hover:text-gray-600 transition-colors"
+        className="shrink-0 text-gray-700 dark:text-gray-300 hover:text-gray-600 transition-colors"
         aria-label="Close notification"
       >
         <X className="h-4 w-4" />

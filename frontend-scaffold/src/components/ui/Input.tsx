@@ -35,7 +35,7 @@ const Input: React.FC<InputProps> = ({
         id={inputId}
         className={`w-full px-4 py-3 border-2 bg-white text-black font-medium
           focus:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 focus:shadow-brutalist
-          placeholder:text-gray-400 ${
+          placeholder:text-gray-700 dark:text-gray-300 ${
             error ? 'border-red-500' : 'border-black'
           } ${className}`}
         aria-invalid={error ? 'true' : 'false'}

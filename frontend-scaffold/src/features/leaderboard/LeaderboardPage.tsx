@@ -94,7 +94,7 @@ const LeaderboardPage: React.FC = () => {
           <div className="overflow-x-auto">
             {entries.length === 0 ? (
               <div className="text-center py-20 border-2 border-dashed border-black">
-                <p className="font-black uppercase text-gray-500">No creators found on the leaderboard yet.</p>
+                <p className="font-black uppercase text-gray-800 dark:text-gray-200">No creators found on the leaderboard yet.</p>
               </div>
             ) : (
               <table className="min-w-full border-collapse">

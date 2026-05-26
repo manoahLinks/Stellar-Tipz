@@ -170,13 +170,13 @@ const WithdrawModal: React.FC<WithdrawModalProps> = ({
 
         <div className="grid gap-3">
           <div className="border-2 border-black bg-yellow-50 p-4">
-            <p className="text-xs font-black uppercase tracking-[0.2em] text-gray-500">
+            <p className="text-xs font-black uppercase tracking-[0.2em] text-gray-800 dark:text-gray-200">
               Available balance
             </p>
             <AmountDisplay amount={balance} className="mt-2 block text-2xl" />
           </div>
           <div className="border-2 border-black bg-white p-4">
-            <p className="text-xs font-black uppercase tracking-[0.2em] text-gray-500">
+            <p className="text-xs font-black uppercase tracking-[0.2em] text-gray-800 dark:text-gray-200">
               Requested amount
             </p>
             <AmountDisplay
@@ -185,7 +185,7 @@ const WithdrawModal: React.FC<WithdrawModalProps> = ({
             />
           </div>
           <div className="border-2 border-black bg-white p-4">
-            <p className="text-xs font-black uppercase tracking-[0.2em] text-gray-500">
+            <p className="text-xs font-black uppercase tracking-[0.2em] text-gray-800 dark:text-gray-200">
               Estimated fee
             </p>
             <AmountDisplay amount={fee} className="mt-2 block text-xl" />

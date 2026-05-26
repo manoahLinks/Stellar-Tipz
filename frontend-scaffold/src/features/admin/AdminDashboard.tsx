@@ -27,7 +27,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             <p className="text-gray-600">
               You do not have permission to access the admin dashboard.
             </p>
-            <p className="text-sm text-gray-500 mt-4">
+            <p className="text-sm text-gray-800 dark:text-gray-200 mt-4">
               Admin Wallet: {adminWallet}
               <br />
               Your Wallet: {currentWallet}
@@ -127,7 +127,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 const VerificationPanel: React.FC = () => (
   <div className="space-y-4">
     <h2 className="text-xl font-semibold mb-4">Verification Requests</h2>
-    <div className="text-center py-8 text-gray-500">
+    <div className="text-center py-8 text-gray-800 dark:text-gray-200">
       <p>Verification request management coming soon</p>
     </div>
   </div>
@@ -136,7 +136,7 @@ const VerificationPanel: React.FC = () => (
 const UsersPanel: React.FC = () => (
   <div className="space-y-4">
     <h2 className="text-xl font-semibold mb-4">User Management</h2>
-    <div className="text-center py-8 text-gray-500">
+    <div className="text-center py-8 text-gray-800 dark:text-gray-200">
       <p>User management tools coming soon</p>
     </div>
   </div>
@@ -154,7 +154,7 @@ const SettingsPanel: React.FC = () => (
           className="w-full px-3 py-2 border rounded-lg"
           disabled
         />
-        <p className="text-xs text-gray-500 mt-1">Fee management coming soon</p>
+        <p className="text-xs text-gray-800 dark:text-gray-200 mt-1">Fee management coming soon</p>
       </div>
       <div>
         <label className="block text-sm font-medium mb-2">Minimum Tip Amount</label>
@@ -164,7 +164,7 @@ const SettingsPanel: React.FC = () => (
           className="w-full px-3 py-2 border rounded-lg"
           disabled
         />
-        <p className="text-xs text-gray-500 mt-1">Minimum tip configuration coming soon</p>
+        <p className="text-xs text-gray-800 dark:text-gray-200 mt-1">Minimum tip configuration coming soon</p>
       </div>
     </div>
   </div>

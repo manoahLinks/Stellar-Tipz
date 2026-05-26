@@ -179,14 +179,14 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ initialImageUrl }) => {
             </div>
           )}
         </div>
-        <p className="mt-1 text-xs text-gray-500">
+        <p className="mt-1 text-xs text-gray-800 dark:text-gray-200">
           Your profile will be at {import.meta.env.VITE_APP_URL || window.location.origin}/@{form.username || 'username'}
         </p>
         {/* Availability status */}
         {form.username && !errors.username && (
           <div className="mt-1">
             {checking && (
-              <p className="text-xs text-gray-500">Checking availability...</p>
+              <p className="text-xs text-gray-800 dark:text-gray-200">Checking availability...</p>
             )}
             {!checking && available === true && (
               <p className="text-xs text-green-600">Username is available!</p>
