@@ -8,6 +8,7 @@ import ErrorBoundary from "@/components/shared/ErrorBoundary";
 import ToastContainer from "@/components/shared/ToastContainer";
 import KeyboardShortcutsProvider from "@/components/shared/KeyboardShortcutsProvider";
 import PageTransition from "@/components/shared/PageTransition";
+import PageAnnouncement from "@/components/shared/PageAnnouncement";
 import { routes } from "@/routes";
 import { useI18n } from "@/i18n";
 import { useOfflineStatus } from "@/hooks/useOfflineStatus";
@@ -27,6 +28,7 @@ const AppRoutes: React.FC = () => {
   return (
     <>
       <ScrollToTop />
+      <PageAnnouncement />
       <KeyboardShortcutsProvider />
       <ErrorBoundary>
         {isOffline && (

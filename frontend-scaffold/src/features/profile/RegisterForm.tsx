@@ -142,7 +142,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ initialImageUrl }) => {
   const isSubmitting = ['signing', 'submitting', 'confirming'].includes(txStatus) || isTransactionPending;
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 max-w-lg mx-auto">
+    <form onSubmit={handleSubmit} noValidate className="space-y-6 max-w-lg mx-auto">
       {/* Username */}
       <div>
         <div className="relative">

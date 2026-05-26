@@ -203,7 +203,12 @@ const WithdrawModal: React.FC<WithdrawModalProps> = ({
         ) : null}
 
         {txStatus === "success" && (
-          <div className="p-3 border-2 border-green-500 bg-green-50 text-green-700 text-sm font-bold text-center uppercase">
+          <div
+            className="p-3 border-2 border-green-500 bg-green-50 text-green-700 text-sm font-bold text-center uppercase"
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+          >
             Withdrawal Successful!
           </div>
         )}

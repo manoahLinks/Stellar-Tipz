@@ -110,7 +110,11 @@ const AvatarUpload: React.FC<AvatarUploadProps> = ({ onUploadSuccess, defaultIma
         data-testid="avatar-input"
       />
 
-      {error && <p className="text-red-500 text-sm">{error}</p>}
+      {error && (
+        <p role="alert" aria-live="assertive" className="text-red-500 text-sm">
+          {error}
+        </p>
+      )}
 
       {file && (
         <button

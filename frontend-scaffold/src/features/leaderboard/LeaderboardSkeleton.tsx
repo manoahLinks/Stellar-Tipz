@@ -7,7 +7,14 @@ import Skeleton from "../../components/ui/Skeleton";
 
 const LeaderboardSkeleton: React.FC<{ count?: number }> = ({ count = 10 }) => {
   return (
-    <PageContainer maxWidth="xl" className="space-y-8 py-10" aria-busy="true">
+    <PageContainer
+      maxWidth="xl"
+      className="space-y-8 py-10"
+      role="status"
+      aria-live="polite"
+      aria-busy="true"
+      aria-atomic="true"
+    >
       <section className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
         <Card className="space-y-5 bg-yellow-100" padding="lg">
           <p className="text-xs font-black uppercase tracking-[0.25em] text-gray-600">

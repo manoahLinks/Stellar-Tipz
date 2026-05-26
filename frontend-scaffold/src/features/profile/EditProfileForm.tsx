@@ -170,7 +170,7 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({
   );
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 max-w-lg mx-auto">
+    <form onSubmit={handleSubmit} noValidate className="space-y-6 max-w-lg mx-auto">
       {/* Username (read-only with lock icon) */}
       <div>
         <label className="block text-sm font-bold uppercase tracking-wide mb-2">

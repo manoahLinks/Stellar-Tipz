@@ -134,13 +134,23 @@ const WithdrawModal: React.FC<WithdrawModalProps> = ({
         </p>
 
         {error && (
-          <div className="p-3 border-2 border-red-500 bg-red-50 text-red-700 text-sm">
+          <div
+            className="p-3 border-2 border-red-500 bg-red-50 text-red-700 text-sm"
+            role="alert"
+            aria-live="assertive"
+            aria-atomic="true"
+          >
             {error}
           </div>
         )}
 
         {txHash && (
-          <div className="p-3 border-2 border-green-500 bg-green-50 text-green-700 text-sm">
+          <div
+            className="p-3 border-2 border-green-500 bg-green-50 text-green-700 text-sm"
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+          >
             Withdrawal successful! Transaction hash: {txHash}
           </div>
         )}

@@ -25,7 +25,10 @@ const Textarea: React.FC<TextareaProps> = ({
   dangerAt,
   ...props
 }) => {
-  const textareaId = id || label?.toLowerCase().replace(/\s+/g, '-');
+  const generatedId = React.useId();
+  const textareaId = id || label?.toLowerCase().replace(/\s+/g, '-') || generatedId;
+  const errorId = error ? `${textareaId}-error` : undefined;
+  const counterId = maxLength ? `${textareaId}-counter` : undefined;
   const [charCount, setCharCount] = useState(() => {
     const initialValue = value?.toString() || defaultValue?.toString() || '';
     return initialValue.length;
@@ -64,16 +67,29 @@ const Textarea: React.FC<TextareaProps> = ({
         onChange={handleChange}
         value={value}
         defaultValue={defaultValue}
+        aria-invalid={error ? 'true' : 'false'}
+        aria-describedby={[errorId, counterId].filter(Boolean).join(' ') || undefined}
         {...props}
       />
       <div className="flex justify-between items-center mt-1">
         {error ? (
-          <p className="text-sm text-red-600 font-medium">{error}</p>
+          <p
+            id={errorId}
+            role="alert"
+            aria-live="assertive"
+            className="text-sm text-red-600 font-medium"
+          >
+            {error}
+          </p>
         ) : (
           <div />
         )}
         {maxLength && (
-          <p data-testid="char-counter" className={`text-sm font-medium ${getCounterColor()}`}>
+          <p
+            id={counterId}
+            data-testid="char-counter"
+            className={`text-sm font-medium ${getCounterColor()}`}
+          >
             {charCount} / {maxLength}
           </p>
         )}

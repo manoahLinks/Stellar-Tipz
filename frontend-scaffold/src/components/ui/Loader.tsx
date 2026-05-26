@@ -5,9 +5,11 @@ interface LoaderProps {
   text?: string;
   role?: string;
   'aria-label'?: string;
+  'aria-live'?: 'off' | 'polite' | 'assertive';
+  'aria-busy'?: boolean | 'true' | 'false';
 }
 
-const Loader: React.FC<LoaderProps> = ({ size = 'md', text }) => {
+const Loader: React.FC<LoaderProps> = ({ size = 'md', text, ...props }) => {
   const sizes: Record<string, string> = {
     sm: 'w-4 h-4 border-2',
     md: 'w-8 h-8 border-3',
@@ -15,7 +17,7 @@ const Loader: React.FC<LoaderProps> = ({ size = 'md', text }) => {
   };
 
   return (
-    <div className="flex flex-col items-center gap-3">
+    <div className="flex flex-col items-center gap-3" {...props}>
       <div
         className={`${sizes[size]} border-black border-t-transparent rounded-full animate-spin`}
       />

@@ -14,7 +14,8 @@ const Input: React.FC<InputProps> = ({
   id,
   ...props
 }) => {
-  const inputId = id || label?.toLowerCase().replace(/\s+/g, '-');
+  const generatedId = React.useId();
+  const inputId = id || label?.toLowerCase().replace(/\s+/g, '-') || generatedId;
   const errorId = error ? `${inputId}-error` : undefined;
   const helperTextId = helperText ? `${inputId}-helper` : undefined;
   
@@ -43,7 +44,12 @@ const Input: React.FC<InputProps> = ({
         {...props}
       />
       {error && (
-        <p id={errorId} className="mt-1 text-sm text-red-500 font-medium">
+        <p
+          id={errorId}
+          role="alert"
+          aria-live="assertive"
+          className="mt-1 text-sm text-red-500 font-medium"
+        >
           {error}
         </p>
       )}

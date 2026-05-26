@@ -29,12 +29,21 @@ const LeaderboardPage: React.FC = () => {
     return entries.slice(startIndex, startIndex + PAGE_SIZE);
   }, [entries, currentPage]);
 
+  const leaderboardAnnouncement = error
+    ? `Leaderboard failed to load: ${categorizeError(error).message}`
+    : entries.length === 0
+    ? "Leaderboard loaded with no creators yet."
+    : `Leaderboard updated. Showing page ${currentPage} of ${totalPages} with ${entries.length} creators.`;
+
   if (loading && entries.length === 0 && !error) {
     return <LeaderboardSkeleton count={PAGE_SIZE} />;
   }
 
   return (
     <PageContainer maxWidth="xl" className="space-y-8 py-10">
+      <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">
+        {leaderboardAnnouncement}
+      </div>
       <section className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
         <Card className="space-y-5 bg-yellow-100" padding="lg" hover>
           <p className="text-xs font-black uppercase tracking-[0.25em] text-gray-600">
