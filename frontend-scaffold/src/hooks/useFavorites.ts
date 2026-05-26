@@ -1,11 +1,13 @@
 import { useMemo, useCallback } from 'react';
 import { useWalletStore } from '../store/walletStore';
 import { useFavoritesStore } from '../store/favoritesStore';
-import { FavoriteCreator } from '../types';
 
 export const useFavorites = () => {
-  const { publicKey } = useWalletStore();
-  const { favoritesByWallet, addFavorite, removeFavorite, incrementTipCount } = useFavoritesStore();
+  const publicKey = useWalletStore((state) => state.publicKey);
+  const favoritesByWallet = useFavoritesStore((state) => state.favoritesByWallet);
+  const addFavorite = useFavoritesStore((state) => state.addFavorite);
+  const removeFavorite = useFavoritesStore((state) => state.removeFavorite);
+  const incrementTipCount = useFavoritesStore((state) => state.incrementTipCount);
 
   const favorites = useMemo(() => {
     if (!publicKey) return [];
@@ -16,7 +18,7 @@ export const useFavorites = () => {
     (address: string) => {
       return favorites.some((f) => f.address === address);
     },
-    [favorites]
+    [favorites],
   );
 
   const toggleFavorite = useCallback(
@@ -28,7 +30,7 @@ export const useFavorites = () => {
         addFavorite(publicKey, creator);
       }
     },
-    [publicKey, isFavorite, removeFavorite, addFavorite]
+    [publicKey, isFavorite, removeFavorite, addFavorite],
   );
 
   const recordTip = useCallback(
@@ -36,7 +38,7 @@ export const useFavorites = () => {
       if (!publicKey) return;
       incrementTipCount(publicKey, address);
     },
-    [publicKey, incrementTipCount]
+    [publicKey, incrementTipCount],
   );
 
   const sortedFavorites = useCallback(
@@ -53,7 +55,12 @@ export const useFavorites = () => {
           return result;
       }
     },
-    [favorites]
+    [favorites],
+  );
+
+  const removeFavoriteForWallet = useCallback(
+    (address: string) => publicKey && removeFavorite(publicKey, address),
+    [publicKey, removeFavorite],
   );
 
   return {
@@ -62,6 +69,6 @@ export const useFavorites = () => {
     toggleFavorite,
     recordTip,
     sortedFavorites,
-    removeFavorite: (address: string) => publicKey && removeFavorite(publicKey, address),
+    removeFavorite: removeFavoriteForWallet,
   };
 };

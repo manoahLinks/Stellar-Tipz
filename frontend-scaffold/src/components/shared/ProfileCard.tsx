@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { User, Copy, ExternalLink, Trophy, Heart } from 'lucide-react';
 import Avatar from '../ui/Avatar';
 import Card from '../ui/Card';
@@ -6,6 +6,7 @@ import CreditBadge from './CreditBadge';
 import AmountDisplay from './AmountDisplay';
 import Skeleton from '../ui/Skeleton';
 import { useFavorites } from '../../hooks/useFavorites';
+import { useRenderCount } from '../../hooks/useRenderCount';
 
 interface ProfileCardProps {
   handle: string;
@@ -28,15 +29,30 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
   totalTips,
   streak,
 }) => {
+  useRenderCount("ProfileCard", publicKey);
   const { isFavorite, toggleFavorite } = useFavorites();
-  const favorite = isFavorite(publicKey);
+  const favorite = useMemo(
+    () => isFavorite(publicKey),
+    [isFavorite, publicKey],
+  );
 
-  const shortKey = `${publicKey.slice(0, 4)}...${publicKey.slice(-4)}`;
+  const shortKey = useMemo(
+    () => `${publicKey.slice(0, 4)}...${publicKey.slice(-4)}`,
+    [publicKey],
+  );
 
-  const copyToClipboard = () => {
+  const copyToClipboard = useCallback(() => {
     navigator.clipboard.writeText(publicKey);
     // Future: trigger toast
-  };
+  }, [publicKey]);
+
+  const handleFavoriteClick = useCallback<React.MouseEventHandler<HTMLButtonElement>>(
+    (event) => {
+      event.stopPropagation();
+      toggleFavorite({ address: publicKey, username: handle });
+    },
+    [handle, publicKey, toggleFavorite],
+  );
 
   if (variant === 'compact') {
     return (
@@ -46,10 +62,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
             <Avatar address={publicKey} alt={handle} size="md" />
             <div className="flex items-center gap-2">
               <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toggleFavorite({ address: publicKey, username: handle });
-                }}
+                onClick={handleFavoriteClick}
                 className={`p-1.5 rounded-full transition-colors ${
                   favorite ? 'text-red-500 bg-red-50' : 'text-gray-400 hover:text-red-500 hover:bg-gray-100'
                 }`}
@@ -93,10 +106,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
     <div className="w-full max-w-sm bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300">
       <div className="h-24 bg-gradient-to-r from-blue-500 to-indigo-600 relative">
         <button
-          onClick={(e) => {
-            e.stopPropagation();
-            toggleFavorite({ address: publicKey, username: handle });
-          }}
+          onClick={handleFavoriteClick}
           className={`absolute top-4 right-4 p-2 rounded-full bg-white/20 backdrop-blur-md transition-colors ${
             favorite ? 'text-red-500' : 'text-white hover:text-red-500 hover:bg-white/40'
           }`}
@@ -143,7 +153,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
   );
 };
 
-export default ProfileCard;
+export default React.memo(ProfileCard);
 
 export const ProfileCardSkeleton: React.FC<{ variant?: 'default' | 'compact' }> = ({ variant = 'default' }) => {
   if (variant === 'compact') {

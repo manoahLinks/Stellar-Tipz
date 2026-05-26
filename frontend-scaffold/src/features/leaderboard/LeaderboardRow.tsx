@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Heart } from "lucide-react";
 
@@ -9,6 +9,7 @@ import Skeleton from "../../components/ui/Skeleton";
 import { useWalletStore } from "../../store";
 import type { LeaderboardEntry } from "../../types/contract";
 import { useFavorites } from "../../hooks/useFavorites";
+import { useRenderCount } from "../../hooks/useRenderCount";
 
 export interface LeaderboardRowProps {
   entry: LeaderboardEntry;
@@ -16,24 +17,45 @@ export interface LeaderboardRowProps {
 }
 
 const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ entry, rank }) => {
+  useRenderCount("LeaderboardRow", entry.address);
   const navigate = useNavigate();
-  const { connected, publicKey } = useWalletStore();
+  const connected = useWalletStore((state) => state.connected);
+  const publicKey = useWalletStore((state) => state.publicKey);
   const { isFavorite, toggleFavorite } = useFavorites();
-  const favorite = isFavorite(entry.address);
+  const favorite = useMemo(
+    () => isFavorite(entry.address),
+    [entry.address, isFavorite],
+  );
 
-  const isOwnProfile =
-    connected && Boolean(publicKey) && publicKey?.toLowerCase() === entry.address.toLowerCase();
+  const isOwnProfile = useMemo(
+    () =>
+      connected &&
+      Boolean(publicKey) &&
+      publicKey?.toLowerCase() === entry.address.toLowerCase(),
+    [connected, entry.address, publicKey],
+  );
 
-  const handleNavigate = () => {
+  const handleNavigate = useCallback(() => {
     navigate(`/@${entry.username}`);
-  };
+  }, [entry.username, navigate]);
 
-  const handleKeyDown: React.KeyboardEventHandler<HTMLTableRowElement> = (event) => {
-    if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
-      handleNavigate();
-    }
-  };
+  const handleKeyDown = useCallback<React.KeyboardEventHandler<HTMLTableRowElement>>(
+    (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        handleNavigate();
+      }
+    },
+    [handleNavigate],
+  );
+
+  const handleFavoriteClick = useCallback<React.MouseEventHandler<HTMLButtonElement>>(
+    (event) => {
+      event.stopPropagation();
+      toggleFavorite({ address: entry.address, username: entry.username });
+    },
+    [entry.address, entry.username, toggleFavorite],
+  );
 
   return (
     <tr
@@ -60,10 +82,7 @@ const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ entry, rank }) => {
             <span className="font-black uppercase">{entry.username}</span>
             {!isOwnProfile && (
               <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toggleFavorite({ address: entry.address, username: entry.username });
-                }}
+                onClick={handleFavoriteClick}
                 className={`p-1 rounded-full transition-colors ${
                   favorite ? 'text-red-500 bg-red-50' : 'text-gray-400 hover:text-red-500 hover:bg-gray-100'
                 }`}
@@ -90,7 +109,7 @@ const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ entry, rank }) => {
   );
 };
 
-export default LeaderboardRow;
+export default React.memo(LeaderboardRow);
 
 export const LeaderboardRowSkeleton: React.FC = () => {
   return (
