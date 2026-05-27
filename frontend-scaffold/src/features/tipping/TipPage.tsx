@@ -10,7 +10,6 @@ import { Link, useParams } from "react-router-dom";
 import PageContainer from "../../components/layout/PageContainer";
 import AmountDisplay from "../../components/shared/AmountDisplay";
 import CreditBadge from "../../components/shared/CreditBadge";
-import TransactionStatus from "../../components/shared/TransactionStatus";
 import Avatar from "../../components/ui/Avatar";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
@@ -29,11 +28,10 @@ import { useTipFlow } from "./useTipFlow";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import CreatorNotFound from "./CreatorNotFound";
 import TipAmountPresets from "./TipAmountPresets";
-import { useNavigate } from "react-router-dom";
+import TransactionTracker, { TransactionTrackerStatus } from "./TransactionTracker";
 
 const TipPage: React.FC = () => {
   const { username } = useParams<{ username: string }>();
-  const navigate = useNavigate();
   const { connected, connect } = useWallet();
   const [amount, setAmount] = useState("5");
   const [message, setMessage] = useState("");
@@ -77,6 +75,7 @@ const TipPage: React.FC = () => {
     step,
     goToConfirm,
     confirmAndSign,
+    retry,
     reset,
     error: flowError,
     txHash,
@@ -100,21 +99,6 @@ const TipPage: React.FC = () => {
       await confirmAndSign();
     });
   }, [confirmAndSign, startTransaction]);
-
-  useEffect(() => {
-    if (step === "success" && txHash && creator) {
-      navigate("/receipt", { 
-        state: { 
-          tipData: { 
-            amount, 
-            message, 
-            txHash, 
-            recipient: creator 
-          } 
-        } 
-      });
-    }
-  }, [step, txHash, creator, amount, message, navigate]);
 
   if (loading) {
     return <TipPageSkeleton />;
@@ -306,9 +290,9 @@ const TipPage: React.FC = () => {
             submitting={step === "signing" || step === "submitting" || isTransactionPending}
           />
 
-          {step === "signing" || step === "submitting" ? (
-            <TransactionStatus
-              status={step === "signing" ? "signing" : "submitting"}
+          {["preparing", "signing", "submitting", "confirming", "success", "error"].includes(step) ? (
+            <TransactionTracker
+              status={step as TransactionTrackerStatus}
               txHash={txHash ?? undefined}
               errorMessage={
                 flowError
@@ -317,6 +301,8 @@ const TipPage: React.FC = () => {
                     : ERRORS.CONTRACT
                   : undefined
               }
+              onRetry={step === "error" ? () => void retry() : undefined}
+              onCancel={step === "preparing" || step === "signing" ? reset : undefined}
             />
           ) : null}
         </Card>

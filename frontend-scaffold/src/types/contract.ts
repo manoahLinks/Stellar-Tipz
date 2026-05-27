@@ -62,6 +62,7 @@ export interface Profile {
   balance: string; // i128 as string
   registeredAt: number;
   updatedAt: number;
+  streak?: number;
 }
 
 /** Tip record from the contract */
