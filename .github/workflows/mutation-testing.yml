@@ -1,0 +1,104 @@
+name: Mutation Testing
+
+on:
+  schedule:
+    # Every Monday at 02:00 UTC — keeps the weekly cadence cheap.
+    - cron: '0 2 * * 1'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  mutation-testing:
+    name: cargo-mutants (tipz critical modules)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: contracts
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@1.88.0
+        with:
+          targets: wasm32-unknown-unknown
+          components: rustfmt, clippy
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            contracts/target
+          key: ${{ runner.os }}-cargo-mutants-${{ hashFiles('contracts/**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Install cargo-mutants
+        run: cargo install cargo-mutants --locked --version "^25"
+
+      # Run mutations scoped to the four critical business-logic modules.
+      # continue-on-error lets the kill-rate step always run and upload artifacts.
+      - name: Run mutation tests
+        run: |
+          cargo mutants \
+            --package tipz-contract \
+            --file tipz/src/fees.rs \
+            --file tipz/src/credit.rs \
+            --file tipz/src/leaderboard.rs \
+            --file tipz/src/tips.rs \
+            --output /tmp/mutants-out \
+            --timeout 120 \
+            -- --all-targets
+        continue-on-error: true
+
+      - name: Compute and enforce kill rate
+        shell: bash
+        run: |
+          OUTCOMES=/tmp/mutants-out/outcomes.json
+          if [ ! -f "$OUTCOMES" ]; then
+            echo "::error::outcomes.json not found — mutation run may have crashed"
+            exit 1
+          fi
+
+          python3 - "$OUTCOMES" <<'PYEOF'
+          import json, sys
+
+          with open(sys.argv[1]) as f:
+              data = json.load(f)
+
+          outcomes = data.get("outcomes", [])
+          killed   = sum(1 for o in outcomes if o.get("summary") == "MutantKilled")
+          survived = sum(1 for o in outcomes if o.get("summary") == "MutantSurvived")
+          timeout  = sum(1 for o in outcomes if o.get("summary") == "Timeout")
+          unviable = sum(1 for o in outcomes if o.get("summary") == "Unviable")
+
+          effective = killed + survived + timeout
+          kill_rate = (killed / effective * 100) if effective > 0 else 0.0
+
+          print(f"Total mutations : {len(outcomes)}")
+          print(f"  Killed        : {killed}")
+          print(f"  Survived      : {survived}")
+          print(f"  Timeout       : {timeout}")
+          print(f"  Unviable      : {unviable}")
+          print(f"Kill rate       : {kill_rate:.1f}%")
+
+          TARGET = 70.0
+          if kill_rate < TARGET:
+              print(f"::error::Kill rate {kill_rate:.1f}% is below the required {TARGET}%.")
+              sys.exit(1)
+          else:
+              print(f"Kill rate {kill_rate:.1f}% meets the {TARGET}% target. ✓")
+          PYEOF
+
+      - name: Upload mutation testing artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mutation-testing-results-${{ github.run_id }}
+          path: /tmp/mutants-out/
+          retention-days: 30

@@ -20,3 +20,21 @@ lto = true
 [profile.release-with-logs]
 inherits = "release"
 debug-assertions = true
+
+[workspace.metadata.cargo-mutants]
+# Exclude boilerplate, generated, and infrastructure files from mutation testing.
+# Focus mutations on business-logic modules: fees, credit, leaderboard, tips.
+exclude_globs = [
+    "tipz/src/storage.rs",
+    "tipz/src/events.rs",
+    "tipz/src/types.rs",
+    "tipz/src/token.rs",
+    "tipz/src/streaks.rs",
+    "tipz/src/lib.rs",
+    "tipz/src/errors.rs",
+    "tipz/src/validation_clean.rs",
+]
+# Soroban tests spin up a mock ledger; allow 3× the default timeout.
+timeout_multiplier = 3.0
+# Pass --all-targets so doctests and integration tests also run.
+additional_cargo_test_args = ["--all-targets"]
