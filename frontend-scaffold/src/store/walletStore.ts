@@ -12,12 +12,6 @@ export interface WalletError {
   message: string;
 }
 
-/** A single connected wallet entry. */
-export interface ConnectedWallet {
-  publicKey: string;
-  walletType: string;
-}
-
 interface WalletState {
   /** All currently connected wallets. */
   wallets: ConnectedWallet[];
