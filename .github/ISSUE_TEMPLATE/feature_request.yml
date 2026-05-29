@@ -1,0 +1,52 @@
+name: Feature Request
+description: Suggest an idea or new feature to improve Stellar Tipz.
+title: "[FEATURE]: "
+labels: ["enhancement"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Have a feature suggestion or enhancement in mind? We'd love to hear it!
+        Please fill out this form to pitch your feature.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary / Description
+      description: A clear and concise description of what the feature is.
+      placeholder: e.g. Add support for tipping creators directly via a browser extension...
+    validations:
+      required: true
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivation & Use Case
+      description: |
+        Why is this feature needed? What problem does it solve? What is the user experience or business impact?
+      placeholder: Explain the problem/use case this feature addresses...
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: A clear and concise description of what you want to happen and how you visualize the feature working.
+      placeholder: Describe your proposed solution...
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: A clear and concise description of any alternative solutions or features you've considered.
+      placeholder: e.g. We could use a redirect instead of an iframe...
+    validations:
+      required: false
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Any other context, wireframes, mockups, or screenshots about the feature request here.
+      placeholder: Add any design references or extra details here...
+    validations:
+      required: false
