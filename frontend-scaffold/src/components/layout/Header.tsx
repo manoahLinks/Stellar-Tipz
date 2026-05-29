@@ -11,6 +11,7 @@ import WalletBalance from "../shared/WalletBalance";
 import WalletSwitcher from "../shared/WalletSwitcher";
 import Button from "../ui/Button";
 import { getModifierKey } from "../../hooks/useKeyboardShortcuts";
+import NotificationBell from "@/features/notifications/NotificationBell";
 import MobileDrawer from "./MobileDrawer";
 
 const UNSEEN_TIPS_KEY = "tipz_unseen_tips";
@@ -150,6 +151,7 @@ const Header: React.FC = () => {
         </nav>
 
         <div className="hidden items-center gap-4 md:flex">
+          <NotificationBell />
           <button
             type="button"
             onClick={toggleTheme}
@@ -199,18 +201,21 @@ const Header: React.FC = () => {
           )}
         </div>
 
-        <button
-          type="button"
-          className="inline-flex items-center justify-center border-2 border-black bg-white p-2 dark:border-white dark:bg-black md:hidden"
-          style={{ boxShadow: shadow }}
-          aria-label={
-            mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"
-          }
-          aria-expanded={mobileMenuOpen}
-          onClick={() => setMobileMenuOpen((open) => !open)}
-        >
-          {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
-        </button>
+        <div className="flex items-center gap-2 md:hidden">
+          <NotificationBell />
+          <button
+            type="button"
+            className="inline-flex items-center justify-center border-2 border-black bg-white p-2 dark:border-white dark:bg-black"
+            style={{ boxShadow: shadow }}
+            aria-label={
+              mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"
+            }
+            aria-expanded={mobileMenuOpen}
+            onClick={() => setMobileMenuOpen((open) => !open)}
+          >
+            {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
+        </div>
       </div>
 
       <MobileDrawer
