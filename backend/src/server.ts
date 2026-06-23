@@ -1,6 +1,6 @@
 import { createServer } from 'node:http';
 import { createApp } from './app.js';
-import { env } from './config/env.js';
+import { env } from '@/config/env.js';
 import { logger } from './common/utils/logger.js';
 
 /** Process entry point: starts the HTTP server (and, later, the WebSocket + indexer). */
