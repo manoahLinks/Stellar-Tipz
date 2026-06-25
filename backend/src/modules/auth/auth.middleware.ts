@@ -33,3 +33,28 @@ export function authMiddleware(req: Request, _res: Response, next: NextFunction)
 
 /** Alias kept for backward compat with any code referencing requireAuth. */
 export const requireAuth = authMiddleware;
+
+/**
+ * #839 — optionalAuth middleware.
+ * Attaches `req.auth` if a valid Bearer token is present, but never rejects.
+ * Routes that call this can check `req.auth` to distinguish authenticated
+ * from anonymous requests.
+ */
+export function optionalAuth(req: Request, _res: Response, next: NextFunction): void {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return next();
+  }
+
+  const token = authHeader.substring(7);
+
+  try {
+    const payload = verifyAccessToken(token);
+    req.auth = payload;
+  } catch {
+    // Invalid/expired token — silently ignore, leave req.auth undefined
+  }
+
+  next();
+}

@@ -1,5 +1,6 @@
 import request from 'supertest';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { Request, Response, NextFunction } from 'express';
 import { createApp } from '../src/app.js';
 import { UnauthorizedError } from '../src/common/errors/AppError.js';
 import { prisma } from '../src/db/prisma.js';
@@ -327,5 +328,58 @@ describe('Auth Flow End-to-End', () => {
 
       expect(logoutRes.status).toBe(200);
     });
+  });
+});
+
+// ── #839 optionalAuth middleware ──────────────────────────────────────────────
+
+import express from 'express';
+import { optionalAuth } from '../src/modules/auth/auth.middleware.js';
+
+describe('optionalAuth middleware (issue #839)', () => {
+  // Build a minimal test app that uses optionalAuth and echoes req.auth
+  const miniApp = express();
+  miniApp.use(express.json());
+  miniApp.get('/optional', optionalAuth, (req, res) => {
+    res.json({ auth: req.auth ?? null });
+  });
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('does not reject when Authorization header is missing', async () => {
+    const res = await request(miniApp).get('/optional');
+    expect(res.status).toBe(200);
+    expect(res.body.auth).toBeNull();
+  });
+
+  it('does not reject when Authorization header is malformed', async () => {
+    const res = await request(miniApp)
+      .get('/optional')
+      .set('Authorization', 'NotBearer abc');
+    expect(res.status).toBe(200);
+    expect(res.body.auth).toBeNull();
+  });
+
+  it('does not reject when token is invalid', async () => {
+    vi.mocked(verifyAccessToken).mockImplementation(() => {
+      throw new UnauthorizedError('bad token');
+    });
+    const res = await request(miniApp)
+      .get('/optional')
+      .set('Authorization', 'Bearer bad.token.here');
+    expect(res.status).toBe(200);
+    expect(res.body.auth).toBeNull();
+  });
+
+  it('attaches req.auth when token is valid', async () => {
+    const payload = { userId: 'user_42', stellarAddress: 'GABC' };
+    vi.mocked(verifyAccessToken).mockReturnValue(payload);
+    const res = await request(miniApp)
+      .get('/optional')
+      .set('Authorization', 'Bearer valid.token.here');
+    expect(res.status).toBe(200);
+    expect(res.body.auth).toEqual(payload);
   });
 });
