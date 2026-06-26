@@ -1,28 +1,35 @@
-import { Request, Response, NextFunction } from 'express';
-import { z } from 'zod';
-import { BadRequestError, NotFoundError } from '@/common/errors/AppError.js';
-import { prisma } from '@/db/prisma.js';
+import { Request, Response, NextFunction } from "express";
+import { z } from "zod";
+import {
+  BadRequestError,
+  NotFoundError,
+} from "../../common/errors/AppError.js";
+import { prisma } from "../../db/prisma.js";
 import {
   createChallenge,
   verifyChallenge,
   refreshToken as refreshTokens,
   revokeRefreshToken,
-} from './auth.service.js';
-import { challengeSchema, verifySchema, refreshSchema } from './auth.schema.js';
-import type { AuthPayload } from './auth.types.js';
+} from "./auth.service.js";
+import { challengeSchema, verifySchema, refreshSchema } from "./auth.schema.js";
+import type { AuthPayload } from "./auth.types.js";
 
 /**
  * POST /auth/challenge
  * Creates an authentication challenge for a Stellar wallet address.
  */
-export async function challengeController(req: Request, res: Response, next: NextFunction): Promise<void> {
+export async function challengeController(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
   try {
-    const { stellarAddress } = challengeSchema.parse(req.body);
-    const response = await createChallenge(stellarAddress);
+    const { stellarAddress, network } = challengeSchema.parse(req.body);
+    const response = await createChallenge(stellarAddress, network);
     res.json(response);
   } catch (error) {
     if (error instanceof z.ZodError) {
-      next(new BadRequestError('Invalid request body', error.errors));
+      next(new BadRequestError("Invalid request body", error.issues));
     } else {
       next(error);
     }
@@ -33,14 +40,24 @@ export async function challengeController(req: Request, res: Response, next: Nex
  * POST /auth/verify
  * Verifies a signed challenge and returns JWT tokens.
  */
-export async function verifyController(req: Request, res: Response, next: NextFunction): Promise<void> {
+export async function verifyController(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
   try {
-    const { stellarAddress, signature, challenge } = verifySchema.parse(req.body);
-    const tokens = await verifyChallenge(stellarAddress, signature, challenge);
+    const { stellarAddress, signature, challenge, network } =
+      verifySchema.parse(req.body);
+    const tokens = await verifyChallenge(
+      stellarAddress,
+      signature,
+      challenge,
+      network,
+    );
     res.json(tokens);
   } catch (error) {
     if (error instanceof z.ZodError) {
-      next(new BadRequestError('Invalid request body', error.errors));
+      next(new BadRequestError("Invalid request body", error.issues));
     } else {
       next(error);
     }
@@ -52,7 +69,11 @@ export async function verifyController(req: Request, res: Response, next: NextFu
  * Returns the current authenticated user's profile summary.
  * Requires: authMiddleware (populates req.auth).
  */
-export async function meController(req: Request, res: Response, next: NextFunction): Promise<void> {
+export async function meController(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
   try {
     const auth = req.auth as AuthPayload;
     const user = await prisma.user.findUnique({
@@ -61,21 +82,23 @@ export async function meController(req: Request, res: Response, next: NextFuncti
         id: true,
         stellarAddress: true,
         username: true,
+        role: true,
+        scopes: true,
         createdAt: true,
       },
     });
 
     if (!user) {
-      throw new NotFoundError('User not found');
+      throw new NotFoundError("User not found");
     }
 
     res.json({
-      data: {
-        id: user.id,
-        stellarAddress: user.stellarAddress,
-        username: user.username,
-        createdAt: user.createdAt.toISOString(),
-      },
+      id: user.id,
+      stellarAddress: user.stellarAddress,
+      username: user.username,
+      role: user.role,
+      scopes: user.scopes,
+      createdAt: user.createdAt.toISOString(),
     });
   } catch (error) {
     next(error);
@@ -86,14 +109,18 @@ export async function meController(req: Request, res: Response, next: NextFuncti
  * POST /auth/refresh
  * Refreshes an access token using a refresh token.
  */
-export async function refreshController(req: Request, res: Response, next: NextFunction): Promise<void> {
+export async function refreshController(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
   try {
     const { refreshToken } = refreshSchema.parse(req.body);
     const tokens = await refreshTokens(refreshToken);
     res.json(tokens);
   } catch (error) {
     if (error instanceof z.ZodError) {
-      next(new BadRequestError('Invalid request body', error.errors));
+      next(new BadRequestError("Invalid request body", error.issues));
     } else {
       next(error);
     }
@@ -104,14 +131,18 @@ export async function refreshController(req: Request, res: Response, next: NextF
  * POST /auth/logout
  * Revokes the current refresh token.
  */
-export async function logoutController(req: Request, res: Response, next: NextFunction): Promise<void> {
+export async function logoutController(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
   try {
     const { refreshToken } = refreshSchema.parse(req.body);
     await revokeRefreshToken(refreshToken);
-    res.json({ message: 'Logged out successfully' });
+    res.json({ message: "Logged out successfully" });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      next(new BadRequestError('Invalid request body', error.errors));
+      next(new BadRequestError("Invalid request body", error.issues));
     } else {
       next(error);
     }
