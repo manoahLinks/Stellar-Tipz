@@ -270,3 +270,20 @@ model WebhookDelivery {
   @@index([subscriptionId])
   @@index([status, nextAttemptAt])
 }
+
+/// Pre-aggregated daily platform analytics, one row per calendar day (UTC).
+/// Populated by a scheduled job so dashboards can read trends without scanning
+/// the raw Tip/User tables.
+model AnalyticsDaily {
+  id          String   @id @default(cuid())
+  /// Calendar day (UTC) this aggregate covers; one row per day.
+  date        DateTime @unique @db.Date
+  /// Number of tips recorded on this day.
+  totalTips   Int      @default(0)
+  /// Sum of tip amounts (in stroops) on this day.
+  totalVolume BigInt   @default(0)
+  /// Users that registered on this day.
+  newUsers    Int      @default(0)
+  /// Distinct users that sent or received a tip on this day.
+  activeUsers Int      @default(0)
+}
