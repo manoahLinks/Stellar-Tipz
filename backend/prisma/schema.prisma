@@ -29,6 +29,8 @@ model User {
   notifications        Notification[]
   leaderboardSnapshots LeaderboardSnapshot[]
   streak               Streak?
+
+  @@index([createdAt])
 }
 
 /// API key for service/admin access and webhook integrations.
@@ -56,6 +58,9 @@ model Tip {
   message       String?
   createdAt     DateTime @default(now())
   refund        Refund?
+
+  @@index([toAddress, createdAt])
+  @@index([fromAddress, createdAt])
 }
 
 /// Tracks indexer progress per event topic so it can resume after a restart.
@@ -106,6 +111,7 @@ model Notification {
   createdAt DateTime  @default(now())
 
   @@index([userId, readAt])
+  @@index([createdAt])
 }
 
 /// Cached X (Twitter) account metrics.
@@ -133,6 +139,8 @@ model LeaderboardSnapshot {
   user      User     @relation(fields: [userId], references: [id])
   totalTips BigInt
   createdAt DateTime @default(now())
+
+  @@index([period, rank])
 }
 
 /// Per-user tipping streak tracking. One row per user (userId is unique).
@@ -200,6 +208,7 @@ model Goal {
   updatedAt     DateTime   @updatedAt
 
   @@index([userId])
+  @@index([status])
 }
 
 /// Billing cadence for a recurring tip subscription.

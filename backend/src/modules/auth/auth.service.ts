@@ -1,6 +1,6 @@
-import { Keypair } from '@stellar/stellar-sdk';
-import jwt, { type SignOptions } from 'jsonwebtoken';
 import crypto from 'node:crypto';
+import jwt, { type SignOptions } from 'jsonwebtoken';
+import { Keypair } from '@stellar/stellar-sdk';
 import { prisma } from '../../db/prisma.js';
 import { config } from '../../config/index.js';
 import { BadRequestError, UnauthorizedError } from '../../common/errors/AppError.js';
@@ -20,6 +20,30 @@ function signAccessToken(user: AuthUser): string {
     config.auth.jwtSecret,
     { expiresIn: config.auth.jwtExpiresIn } as SignOptions,
   );
+}
+
+export interface ChallengeResult {
+  id: string;
+  address: string;
+  expiresAt: Date;
+  messageToSign: string;
+}
+
+export async function createChallenge(address: string): Promise<ChallengeResult> {
+  const nonce = crypto.randomBytes(32).toString('hex');
+  const ttlSeconds = config.auth.challengeTtlSeconds;
+  const expiresAt = new Date(Date.now() + ttlSeconds * 1000);
+
+  const challenge = await prisma.authChallenge.create({
+    data: { address, nonce, expiresAt },
+  });
+
+  return {
+    id: challenge.id,
+    address: challenge.address,
+    expiresAt: challenge.expiresAt,
+    messageToSign: `Sign this message to authenticate with Stellar Tipz. Nonce: ${nonce}`,
+  };
 }
 
 export async function verifyChallenge(
