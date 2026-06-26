@@ -7,6 +7,7 @@ import { env } from './config/env.js';
 import { errorHandler, notFoundHandler } from './common/middleware/errorHandler.js';
 import { logger } from './common/utils/logger.js';
 import { openApiDocument } from './docs/openapi.js';
+import { authRouter } from './modules/auth/auth.routes.js';
 
 /**
  * Builds and configures the Express application (no listening here — see server.ts).
@@ -47,7 +48,7 @@ export function createApp(): Express {
   });
 
   // ── Feature routers mount here ───────────────────────────────
-  // app.use(`${env.API_BASE_PATH}/auth`, authRouter);
+  app.use(`${env.API_BASE_PATH}/auth`, authRouter);
   // app.use(`${env.API_BASE_PATH}/profiles`, profilesRouter);
   // app.use(`${env.API_BASE_PATH}/tips`, tipsRouter);
   // ... (one issue per module)

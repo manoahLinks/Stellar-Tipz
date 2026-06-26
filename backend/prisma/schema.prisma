@@ -26,6 +26,9 @@ model User {
 
   tipperSubscriptions  Subscription[] @relation("SubscriptionTipper")
   creatorSubscriptions Subscription[] @relation("SubscriptionCreator")
+  notifications        Notification[]
+  leaderboardSnapshots LeaderboardSnapshot[]
+  streak               Streak?
 }
 
 /// API key for service/admin access and webhook integrations.
@@ -60,6 +63,24 @@ model IndexerCursor {
   topic      String   @id
   lastLedger Int
   updatedAt  DateTime @updatedAt
+}
+
+/// Raw decoded on-chain event persisted for audit and replay.
+model EventLog {
+  id        String   @id @default(cuid())
+  /// Event topic (e.g. "tip_sent", "subscription_charged").
+  topic     String
+  /// Ledger sequence number where the event was emitted.
+  ledger    Int
+  /// Transaction hash that emitted the event.
+  txHash    String
+  /// Decoded event payload as JSON.
+  data      Json
+  createdAt DateTime @default(now())
+
+  @@index([topic])
+  @@index([ledger])
+  @@index([txHash])
 }
 
 /// Refund requests tied to a specific tip.

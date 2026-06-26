@@ -6,7 +6,7 @@ import { openApiDocument } from '../src/docs/openapi.js';
 describe('API docs', () => {
   it('serves Swagger UI at /api/docs', async () => {
     const app = createApp();
-    const res = await request(app).get('/api/docs/');
+    const res = await request(app).get('/api/v1/docs/');
 
     expect(res.status).toBe(200);
     expect(res.text.toLowerCase()).toContain('swagger');
@@ -14,7 +14,7 @@ describe('API docs', () => {
 
   it('serves the OpenAPI spec with the health endpoint', async () => {
     const app = createApp();
-    const res = await request(app).get('/api/docs/openapi.json');
+    const res = await request(app).get('/api/v1/docs/openapi.json');
 
     expect(res.status).toBe(200);
     expect(res.body.openapi).toBe(openApiDocument.openapi);
