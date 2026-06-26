@@ -27,17 +27,12 @@ model User {
   scopes         String[] @default([])
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+  apiKeys        ApiKey[]
+  refreshTokens  RefreshToken[]
+  goals          Goal[]
 
-  apiKeys              ApiKey[]
-  notifications        Notification[]
-  leaderboardSnapshots LeaderboardSnapshot[]
-  streak               Streak?
-  sentTips             Tip[]                @relation("SentTips")
-  receivedTips         Tip[]                @relation("ReceivedTips")
-  creditScore          CreditScore?
-  creditScoreHistory   CreditScoreHistory[]
-  withdrawals          Withdrawal[]
-  refreshTokens        RefreshToken[]
+  tipperSubscriptions  Subscription[] @relation("SubscriptionTipper")
+  creatorSubscriptions Subscription[] @relation("SubscriptionCreator")
 }
 
 /// API key for service/admin access and webhook integrations.
@@ -169,60 +164,100 @@ model AuthChallenge {
   @@index([expiresAt])
 }
 
-/// Refresh token for token rotation.
+/// Refresh token issued on login, stored hashed for rotation/revocation.
+/// The raw token value is never persisted — only its hash is stored here.
 model RefreshToken {
-  id        String    @id @default(cuid())
-  userId    String
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  token     String    @unique
-  expiresAt DateTime
-  revokedAt DateTime?
-  createdAt DateTime  @default(now())
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  hashedToken String    @unique
+  expiresAt   DateTime
+  revokedAt   DateTime?
+  createdAt   DateTime  @default(now())
 
   @@index([userId])
-  @@index([token])
 }
 
-enum TipStatus {
-  CONFIRMED
-  PENDING
-  REFUNDED
+/// Lifecycle status of a creator funding goal.
+enum GoalStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+  EXPIRED
 }
 
-enum WithdrawalStatus {
+/// Creator-defined funding goal tracked against incoming tips.
+model Goal {
+  id            String     @id @default(cuid())
+  userId        String
+  user          User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title         String
+  targetStroops BigInt
+  raisedStroops BigInt     @default(0)
+  deadline      DateTime?
+  status        GoalStatus @default(ACTIVE)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@index([userId])
+}
+
+/// Billing cadence for a recurring tip subscription.
+enum SubscriptionInterval {
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
+/// Lifecycle status of a recurring tip subscription.
+enum SubscriptionStatus {
+  ACTIVE
+  PAUSED
+  CANCELLED
+  EXPIRED
+}
+
+/// Recurring tip agreement between a tipper and a creator.
+model Subscription {
+  id            String               @id @default(cuid())
+  tipperId      String
+  tipper        User                 @relation("SubscriptionTipper", fields: [tipperId], references: [id], onDelete: Cascade)
+  creatorId     String
+  creator       User                 @relation("SubscriptionCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  amountStroops BigInt
+  interval      SubscriptionInterval
+  nextChargeAt  DateTime
+  status        SubscriptionStatus   @default(ACTIVE)
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+
+  webhookDeliveries WebhookDelivery[]
+
+  @@index([tipperId])
+  @@index([creatorId])
+  @@index([nextChargeAt])
+}
+
+/// Delivery state of a single webhook notification attempt.
+enum WebhookDeliveryStatus {
   PENDING
-  CONFIRMED
+  SUCCESS
   FAILED
 }
 
-model CreditScore {
-  id         String   @id @default(cuid())
-  userId     String   @unique
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  value      Int
-  computedAt DateTime @default(now())
-}
+/// A single delivery attempt of a subscription billing event to a webhook
+/// consumer (e.g. notifying an integrator that a charge succeeded or failed).
+model WebhookDelivery {
+  id             String                @id @default(cuid())
+  subscriptionId String
+  subscription   Subscription          @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  status         WebhookDeliveryStatus @default(PENDING)
+  responseCode   Int?
+  attempts       Int                   @default(0)
+  nextAttemptAt  DateTime?
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
 
-model CreditScoreHistory {
-  id         String   @id @default(cuid())
-  userId     String
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  value      Int
-  computedAt DateTime @default(now())
-
-  @@index([userId])
-}
-
-model Withdrawal {
-  id          String           @id @default(cuid())
-  userId      String
-  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  amount      BigInt
-  fee         BigInt
-  txHash      String?          @unique
-  status      WithdrawalStatus @default(PENDING)
-  requestedAt DateTime         @default(now())
-  confirmedAt DateTime?
-
-  @@index([userId])
+  @@index([subscriptionId])
+  @@index([status, nextAttemptAt])
 }
