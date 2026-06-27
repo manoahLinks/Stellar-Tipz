@@ -5,6 +5,7 @@ import { logger } from './common/utils/logger.js';
 import { prisma } from './db/prisma.js';
 import { redis } from './db/redis.js';
 import { registerClosable, closeAll } from './common/utils/lifecycle.js';
+import { IndexerService } from './indexer/indexer.service.js';
 
 /** Process entry point: starts the HTTP server (and, later, the WebSocket + indexer). */
 async function bootstrap(): Promise<void> {
@@ -22,6 +23,10 @@ async function bootstrap(): Promise<void> {
       await redis.quit();
     },
   });
+
+  // Start the on-chain event indexer.
+  const indexer = new IndexerService();
+  indexer.start().catch((err) => logger.error({ err }, 'Indexer failed to start'));
 
   // The realtime gateway (Socket.IO) attaches to this httpServer — see the realtime issues.
   // initRealtime(httpServer);
