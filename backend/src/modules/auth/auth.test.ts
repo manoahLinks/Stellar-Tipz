@@ -2,8 +2,30 @@ import request from 'supertest';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { createApp } from '../../app.js';
 
-vi.mock('../../db/prisma.js', () => {
-  const mockPrisma = {
+const {
+  mockChallengeFindUnique,
+  mockChallengeDelete,
+  mockUserFindUnique,
+  mockUserCreate,
+  mockRefreshFindUnique,
+  mockRefreshCreate,
+  mockRefreshUpdate,
+  mockRefreshDeleteMany,
+  mockVerify,
+} = vi.hoisted(() => ({
+  mockChallengeFindUnique: vi.fn(),
+  mockChallengeDelete: vi.fn(),
+  mockUserFindUnique: vi.fn(),
+  mockUserCreate: vi.fn(),
+  mockRefreshFindUnique: vi.fn(),
+  mockRefreshCreate: vi.fn(),
+  mockRefreshUpdate: vi.fn(),
+  mockRefreshDeleteMany: vi.fn(),
+  mockVerify: vi.fn(),
+}));
+
+vi.mock('../../db/prisma.js', () => ({
+  prisma: {
     authChallenge: {
       findUnique: vi.fn(),
       deleteMany: vi.fn(),
@@ -12,27 +34,22 @@ vi.mock('../../db/prisma.js', () => {
       upsert: vi.fn(),
     },
     refreshToken: {
-      findUnique: vi.fn(),
-      create: vi.fn(),
-      update: vi.fn(),
-      deleteMany: vi.fn(),
+      findUnique: mockRefreshFindUnique,
+      create: mockRefreshCreate,
+      update: mockRefreshUpdate,
+      deleteMany: mockRefreshDeleteMany,
     },
     $disconnect: vi.fn(),
-  };
-  return { prisma: mockPrisma };
-});
+  },
+}));
 
-vi.mock('@stellar/stellar-sdk', () => {
-  const mockVerify = vi.fn();
-  const mockFromPublicKey = vi.fn(() => ({
-    verify: mockVerify,
-  }));
-  return {
-    Keypair: {
-      fromPublicKey: mockFromPublicKey,
-    },
-  };
-});
+vi.mock('@stellar/stellar-sdk', () => ({
+  Keypair: {
+    fromPublicKey: vi.fn(() => ({
+      verify: mockVerify,
+    })),
+  },
+}));
 
 vi.mock('jsonwebtoken', () => ({
   default: {
@@ -75,7 +92,7 @@ describe('POST /api/v1/auth/verify', () => {
   });
 
   it('returns 400 when challenge is not found', async () => {
-    prisma.authChallenge.findUnique.mockResolvedValue(null);
+    mockChallengeFindUnique.mockResolvedValue(null);
 
     const app = createApp();
     const res = await request(app)
@@ -198,7 +215,7 @@ describe('POST /api/v1/auth/refresh', () => {
   });
 
   it('returns 401 when refresh token is not found', async () => {
-    prisma.refreshToken.findUnique.mockResolvedValue(null);
+    mockRefreshFindUnique.mockResolvedValue(null);
 
     const app = createApp();
     const res = await request(app)
@@ -209,7 +226,7 @@ describe('POST /api/v1/auth/refresh', () => {
   });
 
   it('returns 401 when refresh token is revoked', async () => {
-    prisma.refreshToken.findUnique.mockResolvedValue({
+    mockRefreshFindUnique.mockResolvedValue({
       id: 'rt-1',
       userId: 'user-1',
       hashedToken: 'hash',
@@ -256,8 +273,8 @@ describe('POST /api/v1/auth/refresh', () => {
       createdAt: new Date(),
       user: baseUser,
     });
-    prisma.refreshToken.update.mockResolvedValue({});
-    prisma.refreshToken.create.mockResolvedValue({});
+    mockRefreshUpdate.mockResolvedValue({});
+    mockRefreshCreate.mockResolvedValue({});
 
     const app = createApp();
     const res = await request(app)
